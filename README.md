@@ -1,5 +1,7 @@
 # VFN-CyberSite
-
+<p align="center">
+  <img src="img/cybersite.png" width="300" alt="VFN-CyberSite Logo">
+</p>
 The official vulnerability assessment and security auditing platform for web applications and source code, engineered by VFN Media Lab.
 
 > **Developed by VFN Media Lab, this project is designed to benefit programmers and enhance website security; it is not intended for hacking any websites.**
