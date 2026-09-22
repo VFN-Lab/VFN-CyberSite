@@ -1,0 +1,38 @@
+{
+  "name": "vfn-cybersite",
+  "version": "1.0.0",
+  "description": "VFN-CyberSite — Web Application (DAST) & Source Code (SAST) Security Vulnerability Scanner",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "vulnerability-scanner",
+    "dast",
+    "sast",
+    "owasp",
+    "penetration-testing",
+    "cybersecurity",
+    "ethical-hacking"
+  ],
+  "author": "VFN Media Lab",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VFN-Lab/VFN-CyberSite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VFN-Lab/VFN-CyberSite/issues"
+  },
+  "homepage": "https://github.com/VFN-Lab/VFN-CyberSite#readme",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "cheerio": "^1.0.0",
+    "express": "^4.21.0",
+    "jsdom": "^29.1.1",
+    "multer": "^1.4.5-lts.1"
+  }
+}

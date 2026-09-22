@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VFN-CyberSite</title>
+  <meta name="description"
+    content="Professional-grade security vulnerability scanner for websites and source code. Detect SQL injection, XSS, CSRF, and 40+ vulnerability types.">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- Scripts -->
+  <script src="js/translations.js?v=2.2"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="img/cybersite.png">
+</head>
+
+<body>
+
+  <!-- ============ SPLASH SCREEN ============ -->
+  <div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+      <img src="img/cybersite.png" alt="CyberSite Logo" class="splash-logo">
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-brand" onclick="navigateTo('home')">
+      <img src="img/cybersite.png" alt="CyberSite" class="navbar-brand-logo">
+    </div>
+
+    <div class="navbar-nav">
+      <button class="nav-link active" data-page="home" onclick="navigateTo('home')" data-i18n="nav_home">Home</button>
+      <button class="nav-link" data-page="url-scanner" onclick="navigateTo('url-scanner')"
+        data-i18n="nav_url_scanner">URL Scanner</button>
+      <button class="nav-link" data-page="code-scanner" onclick="navigateTo('code-scanner')"
+        data-i18n="nav_code_scanner">Code Scanner</button>
+      <button class="nav-link" data-page="results" onclick="if(state.scanResults) navigateTo('results')"
+        data-i18n="nav_results">Results</button>
+    </div>
+
+    <div class="navbar-actions">
+      <select id="lang-switcher" class="input"
+        style="padding: 4px 8px; border-radius: var(--radius-md); background: var(--color-glass); color: var(--color-text); margin-inline-end: 12px; font-weight: bold; border: 1px solid var(--color-border);"
+        onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+      </select>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+    </div>
+  </nav>
+
+  <!-- ============ HOME PAGE ============ -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-content container" style="text-align:center; padding-top:var(--space-20);">
+        <div class="hero-logo animate-fadeInUp">
+          <img src="img/cybersite.png" alt="CyberSite" class="hero-logo-img">
+        </div>
+
+        <div class="search-container animate-fadeInUp"
+          style="animation-delay:0.15s; max-width: 600px; margin: 0 auto; position: relative; margin-bottom: var(--space-8);">
+
+          <!-- URL Mode -->
+          <div id="url-search-mode" class="search-bar-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
+            <input type="text" id="hero-url-input" class="search-input"
+              placeholder="Enter target URL (e.g., example.com)" data-i18n="url_placeholder"
+              onkeydown="if(event.key==='Enter')startURLScanFromHero()">
+            <div style="display:flex; gap: 4px; align-items:center;">
+              <button class="icon-btn tooltip" id="hero-aggressive-btn" data-tooltip="Aggressive Mode"
+                data-i18n-tooltip="aggressive_mode" onclick="toggleAggressiveMode()">
+                <i class="fa-solid fa-bolt"></i>
+              </button>
+              <div style="width:1px; height:24px; background:var(--color-border); margin:0 4px;"></div>
+              <button class="icon-btn tooltip" data-tooltip="تحليل كود مصدري" onclick="toggleSearchMode('code')"
+                title="Source Code Analysis" data-i18n-tooltip="tooltip_source_code">
+                <i class="fa-solid fa-file-code"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Upload Mode -->
+          <div id="code-search-mode" class="search-bar-wrapper hidden"
+            style="flex-direction: column; padding: var(--space-4); border-radius: 24px; height: auto;">
+            <div
+              style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom:var(--space-3);">
+              <span style="font-weight:bold; color:var(--color-text-secondary);"><i class="fa-solid fa-file-code"></i>
+                <span data-i18n="code_scan_title">Source Code Analyzer</span></span>
+              <button class="icon-btn tooltip" data-tooltip="Web Scan" onclick="toggleSearchMode('url')"
+                data-i18n-tooltip="tooltip_web_scan">
+                <i class="fa-solid fa-globe"></i>
+              </button>
+            </div>
+            <div class="file-drop-zone-mini" id="hero-upload-zone"
+              onclick="if(event.target.id !== 'hero-file-input') document.getElementById('hero-file-input').click()">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:24px;"></i>
+              <span data-i18n="btn_select_files">Choose file or drag here</span>
+              <input type="file" id="hero-file-input" multiple style="display:none;"
+                onchange="handleHeroFiles(event.target.files)">
+            </div>
+            <div id="hero-file-list" class="file-list" style="width:100%; max-height:100px;"></div>
+            <button class="btn btn-primary btn-sm" style="margin-top:var(--space-3); border-radius:50px; width:100%;"
+              onclick="startCodeScanFromHero()" id="hero-btn-code-scan" disabled>
+              <i class="fa-solid fa-file-code" style="margin-inline-end:8px;"></i> <span data-i18n="btn_analyze">Analyze
+                Code</span>
+            </button>
+          </div>
+
+        </div>
+
+        <div class="stats-grid container-md animate-fadeInUp" style="margin-top:var(--space-8);animation-delay:0.3s;">
+          <div class="stat-card hover-lift">
+            <div class="stat-value" style="color:var(--color-cyan)">80+</div>
+            <div class="stat-label" data-i18n="stat_vuln">Vulnerability Types</div>
+          </div>
+          <div class="stat-card hover-lift">
+            <div class="stat-value" style="color:var(--color-purple)">14</div>
+            <div class="stat-label" data-i18n="stat_modules">Scanner Modules</div>
+          </div>
+          <div class="stat-card hover-lift">
+            <div class="stat-value" style="color:var(--color-low)">8+</div>
+            <div class="stat-label" data-i18n="stat_lang">Languages</div>
+          </div>
+          <div class="stat-card hover-lift">
+            <div class="stat-value" style="color:var(--color-high)">100+</div>
+            <div class="stat-label" data-i18n="stat_paths">Dir Paths</div>
+          </div>
+        </div>
+
+        <div
+          style="margin-top:var(--space-16);display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-6);"
+          class="container stagger-children">
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-cyan);">
+              <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_port_scan">Port Scanning</h4>
+              <p data-i18n="mod_port_scan_desc">TCP connect scan with banner grabbing. Discover open ports and running
+                services with risk assessment.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-purple);">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_active_vuln">Active Vulnerability Testing</h4>
+              <p data-i18n="mod_active_vuln_desc">SQL injection, XSS, path traversal, and open redirect testing with
+                real payloads against forms and parameters.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-high);">
+              <i class="fa-solid fa-file-code"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_static_code">Static Code Analysis</h4>
+              <p data-i18n="mod_static_code_desc">Deep code analysis for JS, PHP, Python, Java, C#, Ruby, Go. Detects
+                hardcoded secrets, injection flaws, and more.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-low);">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_ssl">SSL/TLS Analysis</h4>
+              <p data-i18n="mod_ssl_desc">Certificate validation, protocol version checks, cipher suite analysis, and
+                HTTPS enforcement verification.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-cyan);">
+              <i class="fa-solid fa-server"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_dns">DNS & Subdomain Discovery</h4>
+              <p data-i18n="mod_dns_desc">DNS record analysis, SPF/DMARC/DKIM validation, subdomain enumeration, and
+                takeover detection.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-medium);">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_dir">Directory Brute Force</h4>
+              <p data-i18n="mod_dir_desc">100+ sensitive paths checked including .env, .git, admin panels, backup files,
+                and exposed configurations.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-high);">
+              <i class="fa-solid fa-syringe"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_sqli">Advanced SQL Injection</h4>
+              <p data-i18n="mod_sqli_desc">10 SQLi techniques: Error-Based, Boolean-Based, Time-Based, UNION, Header
+                Injection, WAF Bypass, JSON/API injection.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-critical);">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_auth">Broken Authentication</h4>
+              <p data-i18n="mod_auth_desc">Default credentials, brute force protection, session security, JWT analysis,
+                auth bypass, password reset flaws.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-purple);">
+              <i class="fa-solid fa-arrow-up-right-dots"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_privesc">Privilege Escalation</h4>
+              <p data-i18n="mod_privesc_desc">IDOR detection, role manipulation, admin panel access, HTTP method
+                tampering, mass assignment vulnerabilities.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-medium);">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_upload">File Upload Vulns</h4>
+              <p data-i18n="mod_upload_desc">Extension bypass, Content-Type bypass, polyglot files, SVG XSS, directory
+                listing, upload endpoint discovery.</p>
+            </div>
+          </div>
+          <div class="card hover-lift module-card">
+            <div class="module-icon-wrapper" style="color:var(--color-low);">
+              <i class="fa-solid fa-puzzle-piece"></i>
+            </div>
+            <div class="module-content">
+              <h4 data-i18n="mod_logic">Logic Flaw Scanner</h4>
+              <p data-i18n="mod_logic_desc">Race conditions, business logic, rate limiting, information disclosure,
+                workflow bypass, GraphQL abuse, API key exposure.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="container-md"
+          style="margin-top:var(--space-16);padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-glass);">
+          <p style="font-size:var(--fs-sm);color:var(--color-text-tertiary);">
+            <i class="fa-solid fa-triangle-exclamation" style="margin-inline-end: 4px;"></i>
+            <span data-i18n="disclaimer">Disclaimer: This tool is designed for authorized security testing only. Only
+              scan websites and systems you own or have explicit written permission to test. Unauthorized scanning is
+              illegal in many jurisdictions.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-url-scanner">
+    <div class="container container-lg">
+      <div class="animate-fadeInUp">
+        <h2 style="margin-bottom:var(--space-2);" data-i18n="url_scan_title">Website Security Scanner</h2>
+        <p style="color:var(--color-text-secondary);margin-bottom:var(--space-8);" data-i18n="url_scan_subtitle">Enter a
+          target URL to perform a comprehensive security assessment.</p>
+      </div>
+
+      <div class="card animate-fadeInUp" style="animation-delay:0.1s;">
+        <div class="input-group" style="margin-bottom:var(--space-6);">
+          <span class="input-icon"><i class="fa-solid fa-link" style="font-size: 18px;"></i></span>
+          <input type="text" id="url-input" class="input input-lg input-icon-left"
+            placeholder="Enter target URL (e.g., example.com)" data-i18n="url_placeholder"
+            onkeydown="if(event.key==='Enter')startURLScan()">
+        </div>
+
+        <h5 style="margin-bottom:var(--space-3);color:var(--color-text-secondary);" data-i18n="scan_modules">Scan
+          Modules</h5>
+        <div class="scan-options">
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="crawler" checked>
+            <span class="scan-option-label" data-i18n="mod_crawler">Web Crawler</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="headers" checked>
+            <span class="scan-option-label" data-i18n="mod_headers">Security Headers</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="ssl" checked>
+            <span class="scan-option-label" data-i18n="mod_ssl">SSL/TLS</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="ports" checked>
+            <span class="scan-option-label" data-i18n="mod_port_scan">Port Scanning</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="dirs" checked>
+            <span class="scan-option-label" data-i18n="mod_dir">Dir Brute Force</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="vulns" checked>
+            <span class="scan-option-label" data-i18n="mod_active_vuln">Active Vulns</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="cors" checked>
+            <span class="scan-option-label" data-i18n="mod_cors">CORS Analysis</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="dns" checked>
+            <span class="scan-option-label" data-i18n="mod_dns">DNS Analysis</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="tech" checked>
+            <span class="scan-option-label" data-i18n="mod_tech">Tech Detection</span>
+          </label>
+        </div>
+
+        <h5 style="margin-top:var(--space-5);margin-bottom:var(--space-3);color:var(--color-text-secondary);"><i
+            class="fa-solid fa-skull-crossbones" style="margin-inline-end:6px;color:var(--color-high);"></i><span
+            data-i18n="pentest_modules">Pentest Modules</span></h5>
+        <div class="scan-options">
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="advSqli" checked>
+            <span class="scan-option-label" data-i18n="mod_sqli">Advanced SQLi</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="auth" checked>
+            <span class="scan-option-label" data-i18n="mod_auth">Auth Testing</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="privesc" checked>
+            <span class="scan-option-label" data-i18n="mod_privesc">Privilege Escalation</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="upload" checked>
+            <span class="scan-option-label" data-i18n="mod_upload">File Upload</span>
+          </label>
+          <label class="scan-option">
+            <input type="checkbox" data-scanner="logic" checked>
+            <span class="scan-option-label" data-i18n="mod_logic">Logic Flaws</span>
+          </label>
+        </div>
+
+        <div
+          style="margin-top:var(--space-5);padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-glass);">
+          <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+            <input type="checkbox" id="aggressive-mode" style="width:18px;height:18px;accent-color:var(--color-high);">
+            <div>
+              <div style="font-weight:var(--fw-semibold);color:var(--color-high);">
+                <i class="fa-solid fa-bolt" style="margin-inline-end:4px;"></i><span
+                  data-i18n="aggressive_mode">Aggressive Mode</span>
+              </div>
+              <div style="font-size:var(--fs-xs);color:var(--color-text-tertiary);margin-top:2px;"
+                data-i18n="aggressive_desc">
+                More payloads, deeper testing, race conditions, polyglot files. May affect target performance.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div style="margin-top:var(--space-6);display:flex;justify-content:flex-end;">
+          <button class="btn btn-primary btn-lg" onclick="startURLScan()">
+            <i class="fa-solid fa-play" style="margin-inline-end:8px;"></i> <span data-i18n="btn_start_scan">Start
+              Security Scan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CODE SCANNER PAGE ============ -->
+  <section class="page" id="page-code-scanner">
+    <div class="container container-lg">
+      <div class="animate-fadeInUp">
+        <h2 style="margin-bottom:var(--space-2);" data-i18n="code_scan_title">Source Code Analyzer</h2>
+        <p style="color:var(--color-text-secondary);margin-bottom:var(--space-8);" data-i18n="code_scan_subtitle">Upload
+          source code files for static security analysis (SAST).</p>
+      </div>
+
+      <div class="card animate-fadeInUp" style="animation-delay:0.1s;">
+
+        <div class="file-drop-zone" id="upload-zone"
+          onclick="if(event.target.id !== 'file-input') document.getElementById('file-input').click()">
+          <i class="fa-solid fa-cloud-arrow-up"
+            style="font-size:48px;color:var(--color-cyan);margin-bottom:var(--space-4);"></i>
+          <h4 style="margin-bottom:var(--space-2);"><span data-i18n="btn_select_files">Select Files to Analyze</span>
+          </h4>
+          <p style="color:var(--color-text-tertiary);font-size:var(--fs-sm);">JS, PHP, Python, Java, C#, Ruby, Go, SQL,
+            HTML</p>
+          <input type="file" id="file-input" multiple style="display:none;" onchange="handleFiles(event.target.files)">
+        </div>
+
+        <div id="file-list" class="file-list"></div>
+
+        <div style="margin-top:var(--space-6);display:flex;justify-content:flex-end;">
+          <button class="btn btn-primary btn-lg" onclick="startCodeScan()" id="btn-code-scan" disabled>
+            <i class="fa-solid fa-file-code" style="margin-inline-end:8px;"></i> <span data-i18n="btn_analyze">Analyze
+              Code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Supported Languages -->
+      <div class="card animate-fadeInUp" style="animation-delay:0.2s;margin-top:var(--space-6);">
+        <h5 style="margin-bottom:var(--space-4);" data-i18n="supported_langs">Supported Languages & Detectable
+          Vulnerabilities</h5>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-2);">
+          <div class="tech-item"><span style="color:#f7df1e">■</span><span>JavaScript</span></div>
+          <div class="tech-item"><span style="color:#777bb4">■</span><span>PHP</span></div>
+          <div class="tech-item"><span style="color:#3776ab">■</span><span>Python</span></div>
+          <div class="tech-item"><span style="color:#b07219">■</span><span>Java</span></div>
+          <div class="tech-item"><span style="color:#178600">■</span><span>C#</span></div>
+          <div class="tech-item"><span style="color:#701516">■</span><span>Ruby</span></div>
+          <div class="tech-item"><span style="color:#00add8">■</span><span>Go</span></div>
+          <div class="tech-item"><span style="color:#e34f26">■</span><span>HTML</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCANNING PAGE ============ -->
+  <section class="page" id="page-scanning">
+    <div class="container container-md">
+      <div class="card" style="padding:var(--space-10);">
+        <div class="scan-progress-container">
+          <div class="scan-progress-spinner">
+            <div class="scan-progress-percent" id="scan-percent">0%</div>
+          </div>
+          <h3 data-i18n="scanning_progress">Scanning in Progress</h3>
+          <p class="scan-progress-message" id="scan-message" data-i18n="scan_init">Initializing scan...</p>
+
+          <div style="margin-top:var(--space-6);">
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar" id="scan-progress-bar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="scan-progress-log" id="scan-log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS PAGE ============ -->
+  <section class="page" id="page-results">
+    <div class="container">
+      <div class="dashboard">
+        <!-- Header -->
+        <div class="dashboard-header animate-fadeInUp">
+          <div>
+            <h2 data-i18n="res_title">Security Report</h2>
+            <p style="color:var(--color-text-secondary);margin-top:var(--space-1);">
+              <span data-i18n="res_target">Target:</span> <strong id="result-target"></strong> —
+              <span data-i18n="res_duration">Duration:</span> <span id="result-time"></span> —
+              <span id="result-findings-count">0</span> <span data-i18n="res_findings">findings</span>
+            </p>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-primary" onclick="exportPDF()">
+              <i class="fa-solid fa-print" style="margin-inline-end:8px;"></i> <span data-i18n="btn_export">Export
+                Report</span>
+            </button>
+            <button class="btn btn-secondary" onclick="navigateTo('home')" data-i18n="btn_new_scan">New Scan</button>
+          </div>
+        </div>
+
+        <!-- Score + Severity -->
+        <div class="dashboard-summary animate-fadeInUp" style="animation-delay:0.1s;">
+          <div class="card score-container">
+            <div class="score-circle">
+              <svg viewBox="0 0 200 200">
+                <circle class="score-circle-bg" cx="100" cy="100" r="88" />
+                <circle class="score-circle-fg" id="score-circle-fg" cx="100" cy="100" r="88" stroke-dasharray="553"
+                  stroke-dashoffset="553" />
+              </svg>
+              <div class="score-value">
+                <div class="score-number" id="score-number">0</div>
+                <div class="score-grade" id="score-grade">—</div>
+              </div>
+            </div>
+            <div class="score-label" id="score-label"></div>
+          </div>
+
+          <div class="card">
+            <h4 style="margin-bottom:var(--space-4);" data-i18n="sev_dist">Severity Distribution</h4>
+            <div class="severity-bars" id="severity-bars"></div>
+
+            <div class="separator"></div>
+
+            <h5 style="margin-bottom:var(--space-3);" data-i18n="scanner_results">Scanner Results</h5>
+            <div id="scanner-results" class="stagger-children" style="display:grid;gap:var(--space-2);"></div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card animate-fadeInUp" style="animation-delay:0.2s;">
+          <div class="tabs" style="margin-bottom:var(--space-4);">
+            <button class="tab active" data-tab="findings" onclick="switchResultsTab('findings')"
+              data-i18n="tab_findings">Findings</button>
+            <button class="tab" data-tab="headers" onclick="switchResultsTab('headers')"
+              data-i18n="tab_headers">Headers</button>
+            <button class="tab" data-tab="ssl" onclick="switchResultsTab('ssl')" data-i18n="tab_ssl">SSL/TLS</button>
+            <button class="tab" data-tab="tech" onclick="switchResultsTab('tech')"
+              data-i18n="tab_tech">Technologies</button>
+            <button class="tab" data-tab="dns" onclick="switchResultsTab('dns')" data-i18n="tab_dns">DNS &
+              Subdomains</button>
+            <button class="tab" data-tab="ports" onclick="switchResultsTab('ports')"
+              data-i18n="tab_ports">Ports</button>
+          </div>
+
+          <!-- Findings Tab -->
+          <div class="results-tab-content" id="results-tab-findings">
+            <div class="findings-header">
+              <div class="findings-filters">
+                <button class="filter-btn active" data-severity="all" onclick="filterFindings('all')"
+                  data-i18n="filter_all">All</button>
+                <button class="filter-btn critical" data-severity="critical" onclick="filterFindings('critical')"
+                  data-i18n="filter_critical">Critical</button>
+                <button class="filter-btn high" data-severity="high" onclick="filterFindings('high')"
+                  data-i18n="filter_high">High</button>
+                <button class="filter-btn medium" data-severity="medium" onclick="filterFindings('medium')"
+                  data-i18n="filter_medium">Medium</button>
+                <button class="filter-btn low" data-severity="low" onclick="filterFindings('low')"
+                  data-i18n="filter_low">Low</button>
+              </div>
+              <span class="findings-count"><span data-i18n="total">Total:</span> <strong
+                  id="findings-total-count">0</strong></span>
+            </div>
+            <div class="findings-list" id="findings-list"></div>
+          </div>
+
+          <!-- Headers Tab -->
+          <div class="results-tab-content hidden" id="results-tab-headers">
+            <div id="headers-table"></div>
+          </div>
+
+          <!-- SSL Tab -->
+          <div class="results-tab-content hidden" id="results-tab-ssl">
+            <div id="ssl-info"></div>
+          </div>
+
+          <!-- Tech Tab -->
+          <div class="results-tab-content hidden" id="results-tab-tech">
+            <h5 style="margin-bottom:var(--space-3);" data-i18n="det_tech">Detected Technologies</h5>
+            <div class="tech-grid" id="tech-grid"></div>
+          </div>
+
+          <!-- DNS Tab -->
+          <div class="results-tab-content hidden" id="results-tab-dns">
+            <h5 style="margin-bottom:var(--space-3);" data-i18n="disc_sub">Discovered Subdomains</h5>
+            <div class="subdomains-grid" id="subdomains-grid"></div>
+          </div>
+
+          <!-- Ports Tab -->
+          <div class="results-tab-content hidden" id="results-tab-ports">
+            <h5 style="margin-bottom:var(--space-3);" data-i18n="open_ports">Open Ports</h5>
+            <div class="ports-grid" id="ports-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verification Modal -->
+  <div id="verification-modal" class="modal-overlay hidden"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div class="card" style="max-width:500px;width:90%;position:relative;animation:fadeInUp 0.3s ease;">
+      <button onclick="document.getElementById('verification-modal').classList.add('hidden')"
+        style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary);">&times;</button>
+      <h3 style="margin-bottom:var(--space-2);color:var(--color-text-primary);"><i class="fa-solid fa-shield-check"
+          style="color:var(--color-cyan);margin-inline-end:8px;"></i>Domain Verification</h3>
+      <p style="color:var(--color-text-secondary);font-size:var(--fs-sm);margin-bottom:var(--space-4);">
+        To prevent unauthorized scanning, you must verify ownership of <strong id="verify-domain-name"
+          style="color:var(--color-text-primary);"></strong>.
+      </p>
+
+      <div
+        style="background:var(--color-bg-tertiary);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-4);">
+        <p style="font-size:var(--fs-xs);font-weight:bold;margin-bottom:var(--space-1);">1. Create a file named:</p>
+        <code
+          style="display:block;margin-bottom:var(--space-3);user-select:all;">security-scanner-verification.txt</code>
+
+        <p style="font-size:var(--fs-xs);font-weight:bold;margin-bottom:var(--space-1);">2. Paste this exact content:
+        </p>
+        <pre style="margin:0;padding:var(--space-2);font-size:var(--fs-xs);user-select:all;"
+          id="verify-file-content"></pre>
+      </div>
+
+      <p style="font-size:var(--fs-xs);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
+        3. Upload the file to the root directory of your website so it is accessible at:<br>
+        <a href="#" id="verify-file-link" target="_blank" style="color:var(--color-cyan);"></a>
+      </p>
+
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-3);">
+        <button class="btn btn-secondary"
+          onclick="document.getElementById('verification-modal').classList.add('hidden')">Cancel</button>
+        <button class="btn btn-primary" id="btn-verify-check" onclick="checkVerification()">Verify & Start Scan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/app.js?v=2.2"></script>
+</body>
+
+</html>
