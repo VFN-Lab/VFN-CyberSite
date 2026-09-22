@@ -96,6 +96,8 @@ The official version of VFN-CyberSite is strictly safe and defensive:
 
 This tool is created for educational purposes and authorized security testing only. Always get written permission before testing any system you do not own.
 
+**Important:** This project should not be considered a final, definitive, or complete security guarantee. It serves as an automated baseline scanner and **does not replace a manual penetration test or consulting with a professional cybersecurity specialist.**
+
 The authors and VFN Media Lab are not responsible for any misuse of this tool.
 
 ---

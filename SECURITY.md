@@ -12,6 +12,8 @@ Developed by VFN Media Lab, this project is designed to benefit programmers and 
 
 - CyberSite incorporates a Mandatory Domain Ownership Verification System to enforce responsible usage and prevent unauthorized scanning.
 
+- VFN-CyberSite serves as an automated baseline scanner and is not a definitive security guarantee. It does not replace comprehensive manual penetration testing or consulting with a qualified cybersecurity professional.
+
 - The developers, VFN Media Lab, and contributors assume no liability and are not responsible for any misuse, damage, or legal consequences caused by this tool or altered copies.
 
 ---
