@@ -1,7 +1,7 @@
 {
   "name": "vfn-cybersite",
   "version": "1.0.0",
-  "description": "VFN-CyberSite — Web Application (DAST) & Source Code (SAST) Security Vulnerability Scanner",
+  "description": "An enterprise-grade web security and source code vulnerability scanner by VFN Media Lab",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
